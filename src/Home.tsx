@@ -30,6 +30,7 @@ const HeaderH1 = styled.h1`
 
 interface IWrapperProps {
   isOpen: boolean;
+  newBoard: boolean;
 }
 
 const Wrapper = styled.div<IWrapperProps>`
@@ -44,8 +45,8 @@ const Wrapper = styled.div<IWrapperProps>`
   position: relative;
   height: 100vh;
   background-color: ${(props) =>
-    props.isOpen ? "rgba(0, 0, 0, 0.4)" : "transparent"};
-  filter: ${(props) => (props.isOpen ? "blur(2px)" : "none")};
+    props.isOpen || props.newBoard ? "rgba(0, 0, 0, 0.4)" : "transparent"};
+  filter: ${(props) => (props.isOpen || props.newBoard ? "blur(2px)" : "none")};
 `;
 
 const Boards = styled.div`
@@ -136,7 +137,7 @@ function Home() {
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <Wrapper isOpen={isOpen}>
+        <Wrapper isOpen={isOpen} newBoard={newBoard}>
           <HeaderBox>
             <HeaderH1>Daily Schedule</HeaderH1>
           </HeaderBox>
