@@ -1,37 +1,50 @@
 import { atom, selector } from "recoil";
 import { recoilPersist } from "recoil-persist";
 
-const { persistAtom } = recoilPersist();
+const localStorageTodo = localStorage.getItem("TODOLIST") || "{}";
+const parsedLocalStorageTodo = JSON.parse(localStorageTodo);
 
-export enum Categories {
-  "TO_DO" = "TO_DO",
-  "DOING" = "DOING",
-  "DONE" = "DONE",
-}
+// export const isDarkAtom = atom({
+//   key: "isDark",
+//   default: true,
+// });
 
-export interface IToDo {
-  text: string;
+const { persistAtom } = recoilPersist({
+  key: "isDarkLocal",
+  storage: localStorage,
+});
+
+export const isDarkAtom = atom<boolean>({
+  key: "isDark",
+  default: true,
+  effects_UNSTABLE: [persistAtom],
+});
+
+export interface ITodo {
   id: number;
-  category: Categories;
+  text: string;
+  content: string;
+  type: string;
 }
 
-export const categoryState = atom<Categories>({
-  key: "category",
-  default: Categories.TO_DO,
-  effects_UNSTABLE: [persistAtom],
-});
+export interface IBoard {
+  id: number;
+  title: string;
+  toDos: ITodo[];
+}
 
-export const toDoState = atom<IToDo[]>({
+export interface IToDoState {
+  [key: string]: ITodo[];
+}
+
+export const toDoState = atom<IToDoState>({
   key: "toDo",
-  default: [],
-  effects_UNSTABLE: [persistAtom],
-});
-
-export const toDoSelector = selector({
-  key: "toDoSelector",
-  get: ({ get }) => {
-    const toDos = get(toDoState);
-    const category = get(categoryState);
-    return toDos.filter((toDo) => toDo.category === category);
-  },
+  default:
+    localStorageTodo !== "{}"
+      ? parsedLocalStorageTodo
+      : {
+          TO_DO: [],
+          DOING: [],
+          DONE: [],
+        },
 });

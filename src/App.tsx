@@ -1,6 +1,10 @@
-import React from "react";
-import { createGlobalStyle, styled } from "styled-components";
-import ToDoList from "./components/ToDoList";
+import { ThemeProvider, createGlobalStyle } from "styled-components";
+import Router from "./Router";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { lightTheme, darkTheme } from "./theme";
+import { useEffect, useState } from "react";
+import { useRecoilValue } from "recoil";
+import { isDarkAtom } from "./atoms";
 
 const GlobalStyle = createGlobalStyle`
   html, body, div, span, applet, object, iframe,
@@ -52,12 +56,14 @@ table {
 }
 * {
   box-sizing: border-box;
+  font-family: 'Source Sans Pro', sans-serif;
 }
 body {
   font-weight: 300;
-  font-family: 'Source Sans Pro', sans-serif;
+  /* font-family: 'Source Sans Pro', sans-serif; */
   background-color:${(props) => props.theme.bgColor};
-  color:${(props) => props.theme.textColor};
+  color: ${(props) => props.theme.textColor};
+  transition: background-color 0.3s, color 0.3s;
   line-height: 1.2;
 }
 a {
@@ -65,12 +71,15 @@ a {
   color:inherit;
 }
 `;
+
 function App() {
+  const isDark = useRecoilValue(isDarkAtom);
   return (
-    <>
+    <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
       <GlobalStyle />
-      <ToDoList />
-    </>
+      <Router />
+      <ReactQueryDevtools initialIsOpen={true} />
+    </ThemeProvider>
   );
 }
 

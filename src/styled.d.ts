@@ -3,9 +3,12 @@ import "styled-components";
 // and extend them!
 declare module "styled-components" {
   export interface DefaultTheme {
-    textColor: string;
+    headerColor: string;
     bgColor: string;
-    accentColor: string;
-    cardBgColor: string;
+    boardColor: string;
+    cardColor: string;
+    textColor: string;
+    AddBgColor: string;
+    AddtextColor: string;
   }
 }
