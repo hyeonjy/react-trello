@@ -18,6 +18,9 @@ import {
   TitleInput,
   Form,
 } from "./ToDoForm";
+import { useRecoilState } from "recoil";
+import { toDoState } from "../atoms";
+import { saveTodoListToLocalStorage } from "../utils/todo";
 
 //new board
 const Wrapper = styled(Modal)`
@@ -52,8 +55,19 @@ interface IBoardFormProps {
 function BoardForm({ setNewBoard }: IBoardFormProps) {
   const ref = useRef<HTMLDivElement | undefined>();
   const { register, setValue, handleSubmit } = useForm<IForm>();
+  const [toDos, setToDos] = useRecoilState(toDoState);
 
   const onValid = ({ board }: IForm) => {
+    const newBoard = {
+      id: Date.now(),
+      title: board,
+      toDos: [],
+    };
+    const allBoardCopy = [...toDos];
+    allBoardCopy.splice(allBoardCopy.length, 0, newBoard);
+    setToDos(allBoardCopy);
+    saveTodoListToLocalStorage(allBoardCopy);
+
     setValue("board", "");
     setNewBoard(false);
   };
@@ -74,7 +88,7 @@ function BoardForm({ setNewBoard }: IBoardFormProps) {
         <Header>보드 추가</Header>
         <HeaderIcon icon={faX} onClick={() => setNewBoard(false)} />
       </HeaderBox>
-      <Form>
+      <Form onSubmit={handleSubmit(onValid)}>
         <Input
           {...register("board", { required: true })}
           type="text"

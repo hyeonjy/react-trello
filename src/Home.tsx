@@ -3,18 +3,11 @@ import { useRecoilState } from "recoil";
 import { styled } from "styled-components";
 import { isDarkAtom, toDoState } from "./atoms";
 import Board from "./Components/Board";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { saveTodoListToLocalStorage } from "./utils/todo";
 import ToDoForm from "./Components/ToDoForm";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPlus,
-  faMoon as faSolidMoon,
-  faX,
-} from "@fortawesome/free-solid-svg-icons";
-import { faMoon as faRegularMoon } from "@fortawesome/free-regular-svg-icons";
-import { useForm } from "react-hook-form";
 import BoardForm from "./Components/BoardForm";
+import ButtonBox from "./Components/ButtonBox";
 
 const HeaderBox = styled.div`
   width: 100%;
@@ -36,12 +29,7 @@ interface IWrapperProps {
 const Wrapper = styled.div<IWrapperProps>`
   display: flex;
   flex-direction: column;
-  /* margin-top: 220px; */
-  /* width: 100vw;
-  margin: 0 auto;
-  justify-content: center;
-  align-items: center; */
-  /* height: 100vh; */
+  width: 100%;
   position: relative;
   height: 100vh;
   background-color: ${(props) =>
@@ -50,86 +38,91 @@ const Wrapper = styled.div<IWrapperProps>`
 `;
 
 const Boards = styled.div`
-  display: flex;
-  justify-content: center;
+  display: grid;
+  justify-content: flex-start;
   align-items: flex-start;
-  /* display: flex;
-  justify-content: center;
-  align-items: flex-start; */
-  /* background-color: black; */
-  padding: 40px 60px;
-  width: 100%;
+  padding: 40px 0;
   gap: 50px;
-  /* height: calc(100vh - 10rem); */
-`;
-
-const ButtonBox = styled.div`
-  justify-content: space-between;
-  width: 140px;
-  display: flex;
-  position: absolute;
-  top: 30px;
-  right: 30px;
-`;
-
-const Button = styled.div`
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: ${(props) => props.theme.boardColor};
-  color: ${(props) => props.theme.headerColor};
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
-`;
-
-const ButtonIcon = styled(FontAwesomeIcon)`
-  font-size: 30px;
+  margin: 0 auto;
+  @media screen and (min-width: 980px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media screen and (max-width: 979px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media screen and (max-width: 650px) {
+    grid-template-columns: repeat(1, 1fr);
+  }
 `;
 
 function Home() {
-  const [boardId, setBoardId] = useState("TO_DO");
   const [isOpen, setIsOpen] = useState(false);
   const [newBoard, setNewBoard] = useState(false);
   const [darkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
   const [toDos, setToDos] = useRecoilState(toDoState);
   const [toDoId, setToDoId] = useState<null | number>(null);
+  const [boardId, setBoardId] = useState<null | number>(null);
 
   const onDragEnd = (info: DropResult) => {
-    console.log(info);
     const { destination, draggableId, source } = info;
     if (!destination) return;
     if (destination?.droppableId === source.droppableId) {
       // same board movement
       setToDos((allBoard) => {
-        const boardCopy = [...allBoard[source.droppableId]];
-        const taskObj = boardCopy[source.index];
-        boardCopy.splice(source.index, 1);
-        boardCopy.splice(destination?.index, 0, taskObj);
-        const result = {
-          ...allBoard,
-          [source.droppableId]: boardCopy,
+        const allBoardCopy = [...allBoard];
+        let boardIdx = 0;
+        const boardFilter = {
+          ...allBoardCopy.filter((board, index) => {
+            if (board.id === +source.droppableId) {
+              boardIdx = index;
+            }
+            return board.id === +source.droppableId;
+          })[0],
         };
-        saveTodoListToLocalStorage(result);
-        return result;
+        const cardCopy = [...boardFilter.toDos];
+        const taskObj = boardFilter.toDos[source.index];
+
+        cardCopy.splice(source.index, 1);
+        cardCopy.splice(destination.index, 0, taskObj);
+        boardFilter.toDos = cardCopy;
+        allBoardCopy.splice(boardIdx, 1, boardFilter);
+        saveTodoListToLocalStorage(allBoardCopy);
+        return allBoardCopy;
       });
     } else {
       //cross board movement
       setToDos((allBoard) => {
-        const sourceBoard = [...allBoard[source.droppableId]];
-        const taskObj = sourceBoard[source.index];
-        const destinationBoard = [...allBoard[destination.droppableId]];
-        sourceBoard.splice(source.index, 1);
-        destinationBoard.splice(destination?.index, 0, taskObj);
-        const result = {
-          ...allBoard,
-          [source.droppableId]: sourceBoard,
-          [destination.droppableId]: destinationBoard,
+        const allBoardCopy = [...allBoard];
+        let sourceBoardIdx = 0;
+        let destinationBoardIdx = 0;
+        const sourceBoard = {
+          ...allBoardCopy.filter((board, index) => {
+            if (board.id === +source.droppableId) {
+              sourceBoardIdx = index;
+            }
+            return board.id === +source.droppableId;
+          })[0],
         };
-        saveTodoListToLocalStorage(result);
-        return result;
+        const destinationBoard = {
+          ...allBoardCopy.filter((board, index) => {
+            if (board.id === +destination.droppableId) {
+              destinationBoardIdx = index;
+            }
+            return board.id === +destination.droppableId;
+          })[0],
+        };
+        const sourceCard = [...sourceBoard.toDos];
+        const destinationCard = [...destinationBoard.toDos];
+        const taskObj = sourceBoard.toDos[source.index];
+
+        sourceCard.splice(source.index, 1);
+        destinationCard.splice(destination.index, 0, taskObj);
+        sourceBoard.toDos = sourceCard;
+        destinationBoard.toDos = destinationCard;
+        allBoardCopy.splice(sourceBoardIdx, 1, sourceBoard);
+        allBoardCopy.splice(destinationBoardIdx, 1, destinationBoard);
+        saveTodoListToLocalStorage(allBoardCopy);
+        return allBoardCopy;
       });
     }
   };
@@ -142,33 +135,28 @@ function Home() {
             <HeaderH1>Daily Schedule</HeaderH1>
           </HeaderBox>
           <Boards>
-            {Object.keys(toDos).map((boardId) => (
+            {Object.keys(toDos).map((index) => (
               <Board
-                boardId={boardId}
-                key={boardId}
-                toDos={toDos[boardId]}
+                boardId={toDos[+index].id}
+                boardTitle={toDos[+index].title}
+                key={index}
+                toDos={toDos[Number(index)].toDos}
                 setIsOpen={setIsOpen}
-                setBoardId={setBoardId}
                 setToDoId={setToDoId}
+                setBoardId={setBoardId}
               />
             ))}
           </Boards>
-          <ButtonBox>
-            <Button onClick={() => setDarkAtom((prev) => !prev)}>
-              <ButtonIcon icon={darkAtom ? faRegularMoon : faSolidMoon} />
-            </Button>
-            <Button onClick={() => setNewBoard((prev) => !prev)}>
-              <ButtonIcon icon={faPlus} />
-            </Button>
-          </ButtonBox>
+          <ButtonBox setNewBoard={setNewBoard} />
         </Wrapper>
       </DragDropContext>
       {isOpen && (
         <ToDoForm
           toDoId={toDoId}
           setToDoId={setToDoId}
-          boardId={boardId}
           setIsOpen={setIsOpen}
+          boardId={boardId}
+          setBoardId={setBoardId}
         />
       )}
       {newBoard && <BoardForm setNewBoard={setNewBoard} />}

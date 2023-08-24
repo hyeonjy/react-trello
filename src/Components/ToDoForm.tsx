@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { styled } from "styled-components";
 import { useRecoilState } from "recoil";
 import { toDoState } from "../atoms";
-import { saveTodoListToLocalStorage } from "../utils/todo";
+import { filterWithIndex, saveTodoListToLocalStorage } from "../utils/todo";
 import { SetStateAction, Dispatch, useEffect, useRef } from "react";
 
 interface IModal {
@@ -130,16 +130,22 @@ interface IForm {
 }
 
 interface IToDoFromProps {
-  // ref: React.MutableRefObject<HTMLDivElement | undefined>;
   toDoId: number | null;
-  boardId: string;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   setToDoId: Dispatch<SetStateAction<number | null>>;
+  boardId: number | null;
+  setBoardId: Dispatch<SetStateAction<number | null>>;
 }
 
 const types = ["study", "work", "exercise", "reading"];
 
-function ToDoForm({ toDoId, setToDoId, boardId, setIsOpen }: IToDoFromProps) {
+function ToDoForm({
+  toDoId,
+  setToDoId,
+  setIsOpen,
+  boardId,
+  setBoardId,
+}: IToDoFromProps) {
   const [toDos, setToDos] = useRecoilState(toDoState);
 
   const { register, setValue, handleSubmit } = useForm<IForm>();
@@ -156,9 +162,12 @@ function ToDoForm({ toDoId, setToDoId, boardId, setIsOpen }: IToDoFromProps) {
   }, [ref]);
 
   useEffect(() => {
+    //스케줄 수정의 경우
     if (toDoId !== null) {
-      const boardCopy = toDos[boardId];
-      const filterTodos = boardCopy.filter((todo) => todo.id === toDoId);
+      const allBoardCopy = [...toDos];
+      const { boardFilter, boardIdx } = filterWithIndex(allBoardCopy, boardId);
+      const cardCopy = [...boardFilter.toDos];
+      const filterTodos = cardCopy.filter((todo) => todo.id === toDoId);
       setValue("toDo", filterTodos[0].text);
       setValue("content", filterTodos[0].content);
       setValue("type", filterTodos[0].type);
@@ -173,30 +182,33 @@ function ToDoForm({ toDoId, setToDoId, boardId, setIsOpen }: IToDoFromProps) {
       type: type,
     };
     let filterTodos: any;
+    const allBoardCopy = [...toDos];
+    const { boardFilter, boardIdx } = filterWithIndex(allBoardCopy, boardId);
+    const cardCopy = [...boardFilter.toDos];
+    //스케줄 수정
     if (toDoId !== null) {
       let index = 0;
-      filterTodos = toDos[boardId].filter((todo, idx) => {
+      filterTodos = cardCopy.filter((todo, idx) => {
         if (todo.id === toDoId) {
           index = idx;
         }
         return todo.id !== toDoId;
       });
       filterTodos.splice(index, 0, newToDo);
-    } else {
-      filterTodos = [...toDos[boardId], newToDo];
     }
-    setToDos((allBoards) => {
-      const result = {
-        ...allBoards,
-        [boardId]: filterTodos,
-      };
-      saveTodoListToLocalStorage(result);
-      return result;
-    });
+    //스케줄 작성
+    else {
+      filterTodos = [...cardCopy, newToDo];
+    }
+    boardFilter.toDos = filterTodos;
+    allBoardCopy.splice(boardIdx, 1, boardFilter);
+    setToDos(allBoardCopy);
+    saveTodoListToLocalStorage(allBoardCopy);
     setValue("toDo", "");
     setValue("content", "");
     setIsOpen(false);
     setToDoId(null);
+    setBoardId(null);
   };
 
   return (
@@ -232,7 +244,9 @@ function ToDoForm({ toDoId, setToDoId, boardId, setIsOpen }: IToDoFromProps) {
           </h1>
           <CategorySelect {...register("type", { required: true })}>
             {types.map((type) => (
-              <option value={type}>{type}</option>
+              <option value={type} key={type}>
+                {type}
+              </option>
             ))}
           </CategorySelect>
         </SelectBox>

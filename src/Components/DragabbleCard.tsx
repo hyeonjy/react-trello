@@ -4,10 +4,10 @@ import { Draggable } from "react-beautiful-dnd";
 import { styled } from "styled-components";
 import { useState, useCallback, SetStateAction, Dispatch } from "react";
 import { useRecoilState } from "recoil";
-import { ITodo, toDoState } from "../atoms";
-import { saveTodoListToLocalStorage } from "../utils/todo";
+import { IBoard, ITodo, toDoState } from "../atoms";
+import { filterWithIndex, saveTodoListToLocalStorage } from "../utils/todo";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import SubCard from "./SubCard";
+import DetailCard from "./DetailCard";
 
 const Card = styled.div<{ isDragging: boolean }>`
   display: flex;
@@ -17,7 +17,7 @@ const Card = styled.div<{ isDragging: boolean }>`
   margin-bottom: 5px;
   padding: 10px 10px;
   background-color: ${(props) =>
-    props.isDragging ? "#74b9ff" : props.theme.cardColor};
+    props.isDragging ? "#FFC107" : props.theme.cardColor};
   box-shadow: ${(props) =>
     props.isDragging ? "0px 2px 5px rgba(0,0,0,0.05)" : "none"};
 `;
@@ -56,24 +56,20 @@ const ChevronIcon = styled(FontAwesomeIcon)`
 
 interface IDragabbleCardProps {
   toDo: ITodo;
-  toDoId: number;
-  toDoText: string;
-  index: number;
-  boardId: string;
-  setBoardId: Dispatch<SetStateAction<string>>;
+  boardId: number | null;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   setToDoId: Dispatch<SetStateAction<number | null>>;
+  setBoardId: Dispatch<SetStateAction<number | null>>;
+  index: number;
 }
 
 function DragabbleCard({
   toDo,
-  toDoId,
-  toDoText,
-  index,
   boardId,
-  setBoardId,
   setIsOpen,
   setToDoId,
+  setBoardId,
+  index,
 }: IDragabbleCardProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [isCard, setIsCard] = useState(false);
@@ -81,16 +77,20 @@ function DragabbleCard({
 
   const handleDeleteCard = useCallback(() => {
     setToDos((allBoard) => {
-      const boardCopy = [...allBoard[boardId]];
-      const filterTodos = boardCopy.filter((todo) => todo.id !== toDoId);
-      const result = { ...allBoard, [boardId]: filterTodos };
-      saveTodoListToLocalStorage(result);
-      return result;
+      const allBoardCopy = [...allBoard];
+      const { boardFilter, boardIdx } = filterWithIndex(allBoardCopy, boardId);
+      const cardCopy = [...boardFilter.toDos];
+      const filterTodos = cardCopy.filter((todo) => todo.id !== toDo.id);
+
+      boardFilter.toDos = filterTodos;
+      allBoardCopy.splice(boardIdx, 1, boardFilter);
+      saveTodoListToLocalStorage(allBoardCopy);
+      return allBoardCopy;
     });
   }, [boardId, setToDos]);
 
   return (
-    <Draggable draggableId={toDoId + ""} index={index}>
+    <Draggable draggableId={toDo.id + ""} index={index}>
       {(magic, snapshot) => (
         <>
           <Card
@@ -113,7 +113,7 @@ function DragabbleCard({
                       className="material-symbols-outlined"
                       onClick={() => {
                         setIsOpen(true);
-                        setToDoId(toDoId);
+                        setToDoId(toDo.id);
                         setBoardId(boardId);
                       }}
                     >
@@ -129,7 +129,7 @@ function DragabbleCard({
                 )}
               </IconBox>
             </CardList>
-            <SubCard isCard={isCard} toDo={toDo} />
+            <DetailCard isCard={isCard} toDo={toDo} />
           </Card>
         </>
       )}

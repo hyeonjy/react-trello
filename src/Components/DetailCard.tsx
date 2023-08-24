@@ -79,7 +79,7 @@ interface ISubCardProps {
   toDo: ITodo;
 }
 
-function SubCard({ isCard, toDo }: ISubCardProps) {
+function DetailCard({ isCard, toDo }: ISubCardProps) {
   return (
     <Wrapper
       initial="exit"
@@ -98,4 +98,4 @@ function SubCard({ isCard, toDo }: ISubCardProps) {
   );
 }
 
-export default SubCard;
+export default DetailCard;
