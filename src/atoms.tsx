@@ -42,15 +42,30 @@ export const toDoState = atom<IBoard[]>({
             id: 1,
             title: "TO_DO",
             toDos: [
-              { id: 1, text: "메모1", content: "11111", type: "study" },
-              { id: 123, text: "메모3", content: "33333", type: "study" },
+              {
+                id: 1,
+                text: "토익",
+                content: "영단어 50개 암기",
+                type: "study",
+              },
+              {
+                id: 123,
+                text: "코딩",
+                content: "리액트 강의 듣기",
+                type: "study",
+              },
             ],
           },
           {
             id: 2,
             title: "DOING",
             toDos: [
-              { id: 12, text: "메모2", content: "222222", type: "study" },
+              {
+                id: 12,
+                text: "운동",
+                content: "조깅하기",
+                type: "exercise",
+              },
             ],
           },
           {

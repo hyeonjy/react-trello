@@ -1,29 +1,22 @@
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import { styled } from "styled-components";
-import { isDarkAtom, toDoState } from "./atoms";
+import { toDoState } from "./atoms";
 import Board from "./Components/Board";
 import { useState } from "react";
-import { saveTodoListToLocalStorage } from "./utils/todo";
+import {
+  filterWithIndex,
+  handleDeleteCard,
+  saveTodoListToLocalStorage,
+} from "./utils/todo";
 import ToDoForm from "./Components/ToDoForm";
 import BoardForm from "./Components/BoardForm";
 import ButtonBox from "./Components/ButtonBox";
-
-const HeaderBox = styled.div`
-  width: 100%;
-  padding: 40px 60px;
-`;
-
-const HeaderH1 = styled.h1`
-  font-size: 45px;
-  font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
-  text-align: center;
-  color: ${(props) => props.theme.headerColor};
-`;
+import Trash from "./Components/Trash";
 
 interface IWrapperProps {
-  isOpen: boolean;
-  newBoard: boolean;
+  $isOpen: boolean;
+  $newBoard: boolean;
 }
 
 const Wrapper = styled.div<IWrapperProps>`
@@ -31,10 +24,28 @@ const Wrapper = styled.div<IWrapperProps>`
   flex-direction: column;
   width: 100%;
   position: relative;
-  height: 100vh;
+  height: 100%;
   background-color: ${(props) =>
-    props.isOpen || props.newBoard ? "rgba(0, 0, 0, 0.4)" : "transparent"};
-  filter: ${(props) => (props.isOpen || props.newBoard ? "blur(2px)" : "none")};
+    props.$isOpen || props.$newBoard ? "rgba(0, 0, 0, 0.4)" : "transparent"};
+  filter: ${(props) =>
+    props.$isOpen || props.$newBoard ? "blur(2px)" : "none"};
+`;
+
+const HeaderBox = styled.div`
+  width: 100%;
+  padding: 40px 60px;
+  display: flex;
+  justify-content: center;
+`;
+
+const HeaderH1 = styled.h1`
+  font-size: 45px;
+  font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
+  text-align: center;
+  color: ${(props) => props.theme.headerColor};
+  @media screen and (max-width: 750px) {
+    width: 317px;
+  }
 `;
 
 const Boards = styled.div`
@@ -58,82 +69,79 @@ const Boards = styled.div`
 function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const [newBoard, setNewBoard] = useState(false);
-  const [darkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
   const [toDos, setToDos] = useRecoilState(toDoState);
   const [toDoId, setToDoId] = useState<null | number>(null);
   const [boardId, setBoardId] = useState<null | number>(null);
+  const [trashOpen, setTrashOpen] = useState<boolean>(false);
+
+  const onDragStart = ({ type }: { type: string }) => {
+    if (type === "board") {
+      setTrashOpen(true);
+    }
+  };
 
   const onDragEnd = (info: DropResult) => {
+    setTrashOpen(false);
     const { destination, draggableId, source } = info;
     if (!destination) return;
-    if (destination?.droppableId === source.droppableId) {
-      // same board movement
-      setToDos((allBoard) => {
-        const allBoardCopy = [...allBoard];
-        let boardIdx = 0;
-        const boardFilter = {
-          ...allBoardCopy.filter((board, index) => {
-            if (board.id === +source.droppableId) {
-              boardIdx = index;
-            }
-            return board.id === +source.droppableId;
-          })[0],
-        };
-        const cardCopy = [...boardFilter.toDos];
-        const taskObj = boardFilter.toDos[source.index];
-
-        cardCopy.splice(source.index, 1);
-        cardCopy.splice(destination.index, 0, taskObj);
-        boardFilter.toDos = cardCopy;
-        allBoardCopy.splice(boardIdx, 1, boardFilter);
-        saveTodoListToLocalStorage(allBoardCopy);
-        return allBoardCopy;
-      });
+    if (destination?.droppableId === "trash") {
+      handleDeleteCard(setToDos, +source.droppableId, +draggableId);
     } else {
-      //cross board movement
-      setToDos((allBoard) => {
-        const allBoardCopy = [...allBoard];
-        let sourceBoardIdx = 0;
-        let destinationBoardIdx = 0;
-        const sourceBoard = {
-          ...allBoardCopy.filter((board, index) => {
-            if (board.id === +source.droppableId) {
-              sourceBoardIdx = index;
-            }
-            return board.id === +source.droppableId;
-          })[0],
-        };
-        const destinationBoard = {
-          ...allBoardCopy.filter((board, index) => {
-            if (board.id === +destination.droppableId) {
-              destinationBoardIdx = index;
-            }
-            return board.id === +destination.droppableId;
-          })[0],
-        };
-        const sourceCard = [...sourceBoard.toDos];
-        const destinationCard = [...destinationBoard.toDos];
-        const taskObj = sourceBoard.toDos[source.index];
+      if (destination?.droppableId === source.droppableId) {
+        // same board movement
+        setToDos((allBoard) => {
+          const allBoardCopy = [...allBoard];
+          const { boardFilter, boardIdx } = filterWithIndex(
+            allBoardCopy,
+            +source.droppableId
+          );
+          const cardCopy = [...boardFilter.toDos];
+          const taskObj = boardFilter.toDos[source.index];
 
-        sourceCard.splice(source.index, 1);
-        destinationCard.splice(destination.index, 0, taskObj);
-        sourceBoard.toDos = sourceCard;
-        destinationBoard.toDos = destinationCard;
-        allBoardCopy.splice(sourceBoardIdx, 1, sourceBoard);
-        allBoardCopy.splice(destinationBoardIdx, 1, destinationBoard);
-        saveTodoListToLocalStorage(allBoardCopy);
-        return allBoardCopy;
-      });
+          cardCopy.splice(source.index, 1);
+          cardCopy.splice(destination.index, 0, taskObj);
+          boardFilter.toDos = cardCopy;
+          allBoardCopy.splice(boardIdx, 1, boardFilter);
+          saveTodoListToLocalStorage(allBoardCopy);
+          return allBoardCopy;
+        });
+      } else {
+        //cross board movement
+        setToDos((allBoard) => {
+          const allBoardCopy = [...allBoard];
+          const { boardFilter: sourceBoard, boardIdx: sourceBoardIdx } =
+            filterWithIndex(allBoardCopy, +source.droppableId);
+          const {
+            boardFilter: destinationBoard,
+            boardIdx: destinationBoardIdx,
+          } = filterWithIndex(allBoardCopy, +destination.droppableId);
+
+          const sourceCard = [...sourceBoard.toDos];
+          const destinationCard = [...destinationBoard.toDos];
+          const taskObj = sourceBoard.toDos[source.index];
+
+          sourceCard.splice(source.index, 1);
+          destinationCard.splice(destination.index, 0, taskObj);
+          sourceBoard.toDos = sourceCard;
+          destinationBoard.toDos = destinationCard;
+          allBoardCopy.splice(sourceBoardIdx, 1, sourceBoard);
+          allBoardCopy.splice(destinationBoardIdx, 1, destinationBoard);
+          saveTodoListToLocalStorage(allBoardCopy);
+          return allBoardCopy;
+        });
+      }
     }
   };
 
   return (
     <>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Wrapper isOpen={isOpen} newBoard={newBoard}>
+      <DragDropContext onBeforeDragStart={onDragStart} onDragEnd={onDragEnd}>
+        <Wrapper $isOpen={isOpen} $newBoard={newBoard}>
           <HeaderBox>
             <HeaderH1>Daily Schedule</HeaderH1>
+            <ButtonBox setNewBoard={setNewBoard} />
           </HeaderBox>
+
           <Boards>
             {Object.keys(toDos).map((index) => (
               <Board
@@ -147,9 +155,12 @@ function Home() {
               />
             ))}
           </Boards>
-          <ButtonBox setNewBoard={setNewBoard} />
         </Wrapper>
+
+        <Trash $trashOpen={trashOpen} />
       </DragDropContext>
+
+      {/* 투두 리스트 form*/}
       {isOpen && (
         <ToDoForm
           toDoId={toDoId}
@@ -159,6 +170,8 @@ function Home() {
           setBoardId={setBoardId}
         />
       )}
+
+      {/* 보드 추가 폼 */}
       {newBoard && <BoardForm setNewBoard={setNewBoard} />}
     </>
   );

@@ -1,5 +1,5 @@
 import { faTag } from "@fortawesome/free-solid-svg-icons";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { styled } from "styled-components";
 import { ITodo } from "../atoms";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,16 +7,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const Wrapper = styled(motion.div)`
   background-color: ${(props) => props.theme.cardColor};
   height: 120px;
-  padding-top: 10px;
-  margin-top: 5px;
+  padding-top: 5px;
+  margin-top: 10px;
+  transition: all 3s;
 `;
 
 const SubType = styled.div`
   display: flex;
   margin-top: 5px;
+
   h1 {
     color: #ff9500;
-    font-weight: 500;
     margin-right: 15px;
   }
   span {
@@ -40,6 +41,7 @@ const SubContent = styled.div`
   font-size: 15px;
   word-break: break-all;
   overflow-y: auto;
+
   /* 스크롤 바 css */
   &::-webkit-scrollbar {
     width: 8px;
@@ -81,20 +83,24 @@ interface ISubCardProps {
 
 function DetailCard({ isCard, toDo }: ISubCardProps) {
   return (
-    <Wrapper
-      initial="exit"
-      animate={isCard ? "enter" : "exit"}
-      variants={subCardAnimate}
-    >
-      <SubType>
-        <h1>
-          <TagIcon icon={faTag} />
-          분야:
-        </h1>
-        <span>{toDo.type}</span>
-      </SubType>
-      <SubContent>{toDo.content}</SubContent>
-    </Wrapper>
+    <>
+      {isCard && (
+        <Wrapper
+          initial="exit"
+          animate={isCard ? "enter" : "exit"}
+          variants={subCardAnimate}
+        >
+          <SubType>
+            <h1>
+              <TagIcon icon={faTag} />
+              분야:
+            </h1>
+            <span>{toDo.type}</span>
+          </SubType>
+          <SubContent>{toDo.content}</SubContent>
+        </Wrapper>
+      )}
+    </>
   );
 }
 

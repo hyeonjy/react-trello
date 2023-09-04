@@ -5,7 +5,7 @@ import { styled } from "styled-components";
 import { useRecoilState } from "recoil";
 import { toDoState } from "../atoms";
 import { filterWithIndex, saveTodoListToLocalStorage } from "../utils/todo";
-import { SetStateAction, Dispatch, useEffect, useRef } from "react";
+import { SetStateAction, Dispatch, useEffect, useRef, useState } from "react";
 
 interface IModal {
   ref: React.MutableRefObject<HTMLDivElement | undefined>;
@@ -21,7 +21,7 @@ export const Modal = styled.div<IModal>`
   border-color: none;
 
   /* 가운데 배치 */
-  position: absolute;
+  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -40,6 +40,7 @@ export const Header = styled.h2`
   color: black;
   font-size: 16px;
   font-weight: 500;
+  font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
 `;
 
 export const HeaderIcon = styled(FontAwesomeIcon)`
@@ -63,6 +64,7 @@ const TitleBox = styled.div`
   color: #5b00d1;
   font-weight: 500;
   justify-content: space-between;
+  font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
 `;
 
 export const TitleInput = styled.input`
@@ -70,6 +72,8 @@ export const TitleInput = styled.input`
   border: 0;
   padding: 5px;
   border-bottom: 3px solid #5b00d1;
+  width: 150px;
+  font-weight: 600;
   &:focus {
     outline: none;
   }
@@ -84,6 +88,7 @@ const SelectBox = styled.div`
   font-size: 20px;
   color: #5b00d1;
   font-weight: 500;
+  font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
 `;
 
 const TagIcon = styled(FontAwesomeIcon)`
@@ -97,6 +102,10 @@ const CategorySelect = styled.select`
   padding-right: 5px;
   cursor: pointer;
   font-size: 18px;
+  font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
+  & > option {
+    font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
+  }
 `;
 
 const TextArea = styled.textarea`
@@ -107,6 +116,8 @@ const TextArea = styled.textarea`
   border-color: white;
   border-radius: 5px;
   resize: none;
+  font-weight: 600;
+  font-size: 15px;
   &:focus {
     outline: none;
   }
@@ -146,10 +157,22 @@ function ToDoForm({
   boardId,
   setBoardId,
 }: IToDoFromProps) {
+  const MAX_LENGTH = 6;
   const [toDos, setToDos] = useRecoilState(toDoState);
-
+  const [scrollPosition, setScrollPosition] = useState(window.scrollY);
   const { register, setValue, handleSubmit } = useForm<IForm>();
   const ref = useRef<HTMLDivElement | undefined>();
+
+  //모달 open시 스크롤 방지
+  useEffect(() => {
+    document.body.style.top = `-${scrollPosition}px`;
+    document.body.classList.add("modal-open"); // body에 클래스 추가
+    return () => {
+      document.body.style.top = "";
+      document.body.classList.remove("modal-open"); // body에서 클래스 제거
+      window.scrollTo(0, scrollPosition);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -211,6 +234,13 @@ function ToDoForm({
     setBoardId(null);
   };
 
+  //한글의 경우 maxLength 사용시 버그 해결
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value.length > MAX_LENGTH) {
+      setValue("toDo", e.target.value.slice(0, MAX_LENGTH));
+    }
+  };
+
   return (
     <Modal ref={ref}>
       <HeaderBox>
@@ -232,9 +262,14 @@ function ToDoForm({
           </label>
           <TitleInput
             id="title"
-            {...register("toDo", { required: true })}
             type="text"
-            placeholder={`작업이름을 작성해주세요`}
+            maxLength={6}
+            {...register("toDo", {
+              required: true,
+              onChange: (e) => {
+                onChange(e);
+              },
+            })}
           />
         </TitleBox>
         <SelectBox>
@@ -251,7 +286,10 @@ function ToDoForm({
           </CategorySelect>
         </SelectBox>
         <TextArea
-          {...register("content", { required: true })}
+          maxLength={115}
+          {...register("content", {
+            required: true,
+          })}
           placeholder={`세부 사항을 작성해주세요`}
         />
         <SubmitBtn type="submit" value={toDoId === null ? "등록" : "수정"} />
