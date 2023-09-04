@@ -2,7 +2,6 @@ import { ThemeProvider, createGlobalStyle } from "styled-components";
 import Router from "./Router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { lightTheme, darkTheme } from "./theme";
-import { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { isDarkAtom } from "./atoms";
 
@@ -36,9 +35,6 @@ footer, header, hgroup, main, menu, nav, section {
 *[hidden] {
     display: none;
 }
-body {
-  line-height: 1;
-}
 menu, ol, ul {
   list-style: none;
 }
@@ -59,12 +55,17 @@ table {
   font-family: 'Source Sans Pro', sans-serif;
 }
 body {
-  font-weight: 300;
-  /* font-family: 'Source Sans Pro', sans-serif; */
+  font-weight: 500;
   background-color:${(props) => props.theme.bgColor};
   color: ${(props) => props.theme.textColor};
   transition: background-color 0.3s, color 0.3s;
   line-height: 1.2;
+  overflow-y: scroll;
+  &.modal-open{
+    position: fixed; 
+    overflow-y: scroll;
+    width: 100%;
+  }
 }
 a {
   text-decoration:none;
@@ -74,6 +75,7 @@ a {
 
 function App() {
   const isDark = useRecoilValue(isDarkAtom);
+
   return (
     <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
       <GlobalStyle />

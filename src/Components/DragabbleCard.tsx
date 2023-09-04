@@ -1,15 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useMemo } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { styled } from "styled-components";
-import { useState, useCallback, SetStateAction, Dispatch } from "react";
-import { useRecoilState } from "recoil";
+import React, { useState, SetStateAction, Dispatch } from "react";
+import { useSetRecoilState } from "recoil";
 import { ITodo, toDoState } from "../atoms";
-import { saveTodoListToLocalStorage } from "../utils/todo";
+import { handleDeleteCard } from "../utils/todo";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import SubCard from "./SubCard";
+import DetailCard from "./DetailCard";
 
-const Card = styled.div<{ isDragging: boolean }>`
+const Card = styled.div<{ $isDragging: boolean }>`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -17,17 +16,21 @@ const Card = styled.div<{ isDragging: boolean }>`
   margin-bottom: 5px;
   padding: 10px 10px;
   background-color: ${(props) =>
-    props.isDragging ? "#74b9ff" : props.theme.cardColor};
+    props.$isDragging ? "#FFC107" : props.theme.cardColor};
   box-shadow: ${(props) =>
-    props.isDragging ? "0px 2px 5px rgba(0,0,0,0.05)" : "none"};
+    props.$isDragging ? "0px 2px 5px rgba(0,0,0,0.05)" : "none"};
 `;
 
 const CardList = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 20px;
   color: black;
+  height: 20px;
+  & > span {
+    min-width: 70%;
+    padding: 10px 0;
+  }
 `;
 
 const IconBox = styled.div`
@@ -56,82 +59,66 @@ const ChevronIcon = styled(FontAwesomeIcon)`
 
 interface IDragabbleCardProps {
   toDo: ITodo;
-  toDoId: number;
-  toDoText: string;
-  index: number;
-  boardId: string;
-  setBoardId: Dispatch<SetStateAction<string>>;
+  boardId: number | null;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   setToDoId: Dispatch<SetStateAction<number | null>>;
+  setBoardId: Dispatch<SetStateAction<number | null>>;
+  index: number;
 }
 
 function DragabbleCard({
   toDo,
-  toDoId,
-  toDoText,
-  index,
   boardId,
-  setBoardId,
   setIsOpen,
   setToDoId,
+  setBoardId,
+  index,
 }: IDragabbleCardProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [isCard, setIsCard] = useState(false);
-  const [toDos, setToDos] = useRecoilState(toDoState);
-
-  const handleDeleteCard = useCallback(() => {
-    setToDos((allBoard) => {
-      const boardCopy = [...allBoard[boardId]];
-      const filterTodos = boardCopy.filter((todo) => todo.id !== toDoId);
-      const result = { ...allBoard, [boardId]: filterTodos };
-      saveTodoListToLocalStorage(result);
-      return result;
-    });
-  }, [boardId, setToDos]);
+  const setToDos = useSetRecoilState(toDoState);
 
   return (
-    <Draggable draggableId={toDoId + ""} index={index}>
+    <Draggable draggableId={toDo.id + ""} index={index}>
       {(magic, snapshot) => (
-        <>
-          <Card
-            isDragging={snapshot.isDragging}
-            ref={magic.innerRef}
-            {...magic.dragHandleProps}
-            {...magic.draggableProps}
-            onMouseOver={() => setIsHovering(true)}
-            onMouseOut={() => setIsHovering(false)}
-          >
-            <CardList>
-              <span onClick={() => setIsCard((prev) => !prev)}>
-                <ChevronIcon icon={isCard ? faChevronUp : faChevronDown} />
-                {toDo.text}
-              </span>
-              <IconBox>
-                {isHovering && (
-                  <>
-                    <CardIcon
-                      className="material-symbols-outlined"
-                      onClick={() => {
-                        setIsOpen(true);
-                        setToDoId(toDoId);
-                        setBoardId(boardId);
-                      }}
-                    >
-                      edit
-                    </CardIcon>
-                    <CardIcon
-                      className="material-icons"
-                      onClick={handleDeleteCard}
-                    >
-                      delete
-                    </CardIcon>
-                  </>
-                )}
-              </IconBox>
-            </CardList>
-            <SubCard isCard={isCard} toDo={toDo} />
-          </Card>
-        </>
+        <Card
+          $isDragging={snapshot.isDragging}
+          ref={magic.innerRef}
+          {...magic.dragHandleProps}
+          {...magic.draggableProps}
+          onMouseOver={() => setIsHovering(true)}
+          onMouseOut={() => setIsHovering(false)}
+        >
+          <CardList>
+            <span onClick={() => setIsCard((prev) => !prev)}>
+              <ChevronIcon icon={isCard ? faChevronUp : faChevronDown} />
+              {toDo.text}
+            </span>
+            <IconBox>
+              {isHovering && (
+                <>
+                  <CardIcon
+                    className="material-symbols-outlined"
+                    onClick={() => {
+                      setIsOpen(true);
+                      setToDoId(toDo.id);
+                      setBoardId(boardId);
+                    }}
+                  >
+                    edit
+                  </CardIcon>
+                  <CardIcon
+                    className="material-icons"
+                    onClick={() => handleDeleteCard(setToDos, boardId, toDo.id)}
+                  >
+                    delete
+                  </CardIcon>
+                </>
+              )}
+            </IconBox>
+          </CardList>
+          <DetailCard isCard={isCard} toDo={toDo} />
+        </Card>
       )}
     </Draggable>
   );

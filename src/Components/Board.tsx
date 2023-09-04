@@ -1,24 +1,21 @@
-import { useForm } from "react-hook-form";
 import { Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import DragabbleCard from "./DragabbleCard";
-import { IBoard, ITodo, toDoState } from "../atoms";
+import { ITodo, toDoState } from "../atoms";
 import { useSetRecoilState } from "recoil";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useState, SetStateAction, Dispatch } from "react";
+import { faX } from "@fortawesome/free-solid-svg-icons";
+import { useState, SetStateAction, Dispatch, useCallback } from "react";
+import { saveTodoListToLocalStorage } from "../utils/todo";
 
 const Wrapper = styled.div`
-  width: 300px;
+  width: 275px;
   padding-top: 10px;
   background-color: ${(props) => props.theme.boardColor};
   border-radius: 10px;
-  /* max-height: calc(100vh - 30rem); */
-  /* max-height: calc(100vh - 11rem); */
   display: flex;
   flex-direction: column;
   min-height: 200px;
-  /* overflow: hidden; */
   box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px,
     rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px,
     rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
@@ -42,27 +39,26 @@ const IconBox = styled.div`
   align-items: center;
 `;
 
-const TitleIcon = styled.div`
-  font-size: 20px;
+const TitleIcon = styled(FontAwesomeIcon).withConfig({
+  shouldForwardProp: (prop) => "message" !== prop,
+})`
+  font-size: 15px;
   margin-left: 1px;
   border-radius: 5px;
   padding: 2px;
   cursor: pointer;
-  color: #222222;
-  &:hover {
-    background-color: rgb(235 232 230);
-  }
 `;
 
 interface IAreaProps {
-  isDraggingFromThis: boolean;
-  isDraggingOver: boolean;
+  $isDraggingFromThis: boolean;
+  $isDraggingOver: boolean;
 }
+
 const Area = styled.div<IAreaProps>`
   background-color: ${(props) =>
-    props.isDraggingOver
-      ? "#dfe6e9"
-      : props.isDraggingFromThis
+    props.$isDraggingOver
+      ? "#FFF0E0"
+      : props.$isDraggingFromThis
       ? "#b2bec3"
       : "transparent"};
   flex-grow: 1;
@@ -89,72 +85,78 @@ const AddBtn = styled.div`
 
 interface IBoardProps {
   toDos: ITodo[];
-  boardId: string;
+  boardTitle: string;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
-  setBoardId: Dispatch<SetStateAction<string>>;
   setToDoId: Dispatch<SetStateAction<number | null>>;
+  boardId: number | null;
+  setBoardId: Dispatch<SetStateAction<number | null>>;
 }
 
 function Board({
   toDos,
-  boardId,
+  boardTitle,
   setIsOpen,
-  setBoardId,
   setToDoId,
+  boardId,
+  setBoardId,
 }: IBoardProps) {
   const [isHovering, setIsHovering] = useState(false);
   const setToDos = useSetRecoilState(toDoState);
 
+  const handleDeleteBoard = useCallback(() => {
+    setToDos((allBoard) => {
+      const allBoardCopy = [...allBoard];
+      const boardFilter = allBoardCopy.filter((board, index) => {
+        return board.id !== boardId;
+      });
+      saveTodoListToLocalStorage(boardFilter);
+      return boardFilter;
+    });
+  }, [boardId, setToDos]);
+
   return (
-    <Wrapper
-      onMouseOver={() => setIsHovering(true)}
-      onMouseOut={() => setIsHovering(false)}
-    >
-      <TitleBox>
-        <Title>{boardId}</Title>
-        <IconBox>
-          {isHovering && (
-            <>
-              {/* <TitleIcon className="material-symbols-outlined">edit</TitleIcon> */}
-              <TitleIcon className="material-icons">delete</TitleIcon>
-            </>
-          )}
-        </IconBox>
-      </TitleBox>
-      <Droppable droppableId={boardId}>
-        {(magic, info) => (
+    <Droppable droppableId={boardId + ""} type="board">
+      {(magic, info) => (
+        <Wrapper
+          onMouseOver={() => setIsHovering(true)}
+          onMouseOut={() => setIsHovering(false)}
+        >
+          <TitleBox>
+            <Title>{boardTitle}</Title>
+            <IconBox onClick={handleDeleteBoard}>
+              {isHovering && <TitleIcon icon={faX} />}
+            </IconBox>
+          </TitleBox>
           <Area
-            isDraggingOver={info.isDraggingOver}
-            isDraggingFromThis={Boolean(info.draggingFromThisWith)}
             ref={magic.innerRef}
             {...magic.droppableProps}
+            $isDraggingOver={info.isDraggingOver}
+            $isDraggingFromThis={Boolean(info.draggingFromThisWith)}
           >
             {toDos.map((toDo, index) => (
               <DragabbleCard
                 key={toDo.id}
-                index={index}
-                toDo={toDo}
-                toDoId={toDo.id}
-                toDoText={toDo.text}
                 boardId={boardId}
-                setBoardId={setBoardId}
+                toDo={toDo}
                 setIsOpen={setIsOpen}
                 setToDoId={setToDoId}
+                setBoardId={setBoardId}
+                index={index}
               />
             ))}
             {magic.placeholder}
           </Area>
-        )}
-      </Droppable>
-      <AddBtn
-        onClick={() => {
-          setIsOpen(true);
-          setBoardId(boardId);
-        }}
-      >
-        <span>+ 추가</span>
-      </AddBtn>
-    </Wrapper>
+          <AddBtn
+            onClick={() => {
+              setIsOpen(true);
+              setBoardId(boardId);
+            }}
+          >
+            <span>+ 추가</span>
+          </AddBtn>
+        </Wrapper>
+      )}
+    </Droppable>
   );
 }
 export default Board;

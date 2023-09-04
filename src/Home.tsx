@@ -1,24 +1,41 @@
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import { styled } from "styled-components";
-import { isDarkAtom, toDoState } from "./atoms";
+import { toDoState } from "./atoms";
 import Board from "./Components/Board";
-import { useEffect, useRef, useState } from "react";
-import { saveTodoListToLocalStorage } from "./utils/todo";
-import ToDoForm from "./Components/ToDoForm";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState } from "react";
 import {
-  faPlus,
-  faMoon as faSolidMoon,
-  faX,
-} from "@fortawesome/free-solid-svg-icons";
-import { faMoon as faRegularMoon } from "@fortawesome/free-regular-svg-icons";
-import { useForm } from "react-hook-form";
+  filterWithIndex,
+  handleDeleteCard,
+  saveTodoListToLocalStorage,
+} from "./utils/todo";
+import ToDoForm from "./Components/ToDoForm";
 import BoardForm from "./Components/BoardForm";
+import ButtonBox from "./Components/ButtonBox";
+import Trash from "./Components/Trash";
+
+interface IWrapperProps {
+  $isOpen: boolean;
+  $newBoard: boolean;
+}
+
+const Wrapper = styled.div<IWrapperProps>`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+  height: 100%;
+  background-color: ${(props) =>
+    props.$isOpen || props.$newBoard ? "rgba(0, 0, 0, 0.4)" : "transparent"};
+  filter: ${(props) =>
+    props.$isOpen || props.$newBoard ? "blur(2px)" : "none"};
+`;
 
 const HeaderBox = styled.div`
   width: 100%;
   padding: 40px 60px;
+  display: flex;
+  justify-content: center;
 `;
 
 const HeaderH1 = styled.h1`
@@ -26,151 +43,135 @@ const HeaderH1 = styled.h1`
   font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
   text-align: center;
   color: ${(props) => props.theme.headerColor};
-`;
-
-interface IWrapperProps {
-  isOpen: boolean;
-  newBoard: boolean;
-}
-
-const Wrapper = styled.div<IWrapperProps>`
-  display: flex;
-  flex-direction: column;
-  /* margin-top: 220px; */
-  /* width: 100vw;
-  margin: 0 auto;
-  justify-content: center;
-  align-items: center; */
-  /* height: 100vh; */
-  position: relative;
-  height: 100vh;
-  background-color: ${(props) =>
-    props.isOpen || props.newBoard ? "rgba(0, 0, 0, 0.4)" : "transparent"};
-  filter: ${(props) => (props.isOpen || props.newBoard ? "blur(2px)" : "none")};
+  @media screen and (max-width: 750px) {
+    width: 317px;
+  }
 `;
 
 const Boards = styled.div`
-  display: flex;
-  justify-content: center;
+  display: grid;
+  justify-content: flex-start;
   align-items: flex-start;
-  /* display: flex;
-  justify-content: center;
-  align-items: flex-start; */
-  /* background-color: black; */
-  padding: 40px 60px;
-  width: 100%;
+  padding: 40px 0;
   gap: 50px;
-  /* height: calc(100vh - 10rem); */
-`;
-
-const ButtonBox = styled.div`
-  justify-content: space-between;
-  width: 140px;
-  display: flex;
-  position: absolute;
-  top: 30px;
-  right: 30px;
-`;
-
-const Button = styled.div`
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: ${(props) => props.theme.boardColor};
-  color: ${(props) => props.theme.headerColor};
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
-`;
-
-const ButtonIcon = styled(FontAwesomeIcon)`
-  font-size: 30px;
+  margin: 0 auto;
+  @media screen and (min-width: 980px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media screen and (max-width: 979px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media screen and (max-width: 650px) {
+    grid-template-columns: repeat(1, 1fr);
+  }
 `;
 
 function Home() {
-  const [boardId, setBoardId] = useState("TO_DO");
   const [isOpen, setIsOpen] = useState(false);
   const [newBoard, setNewBoard] = useState(false);
-  const [darkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
   const [toDos, setToDos] = useRecoilState(toDoState);
   const [toDoId, setToDoId] = useState<null | number>(null);
+  const [boardId, setBoardId] = useState<null | number>(null);
+  const [trashOpen, setTrashOpen] = useState<boolean>(false);
+
+  const onDragStart = ({ type }: { type: string }) => {
+    if (type === "board") {
+      setTrashOpen(true);
+    }
+  };
 
   const onDragEnd = (info: DropResult) => {
-    console.log(info);
+    setTrashOpen(false);
     const { destination, draggableId, source } = info;
     if (!destination) return;
-    if (destination?.droppableId === source.droppableId) {
-      // same board movement
-      setToDos((allBoard) => {
-        const boardCopy = [...allBoard[source.droppableId]];
-        const taskObj = boardCopy[source.index];
-        boardCopy.splice(source.index, 1);
-        boardCopy.splice(destination?.index, 0, taskObj);
-        const result = {
-          ...allBoard,
-          [source.droppableId]: boardCopy,
-        };
-        saveTodoListToLocalStorage(result);
-        return result;
-      });
+    if (destination?.droppableId === "trash") {
+      handleDeleteCard(setToDos, +source.droppableId, +draggableId);
     } else {
-      //cross board movement
-      setToDos((allBoard) => {
-        const sourceBoard = [...allBoard[source.droppableId]];
-        const taskObj = sourceBoard[source.index];
-        const destinationBoard = [...allBoard[destination.droppableId]];
-        sourceBoard.splice(source.index, 1);
-        destinationBoard.splice(destination?.index, 0, taskObj);
-        const result = {
-          ...allBoard,
-          [source.droppableId]: sourceBoard,
-          [destination.droppableId]: destinationBoard,
-        };
-        saveTodoListToLocalStorage(result);
-        return result;
-      });
+      if (destination?.droppableId === source.droppableId) {
+        // same board movement
+        setToDos((allBoard) => {
+          const allBoardCopy = [...allBoard];
+          const { boardFilter, boardIdx } = filterWithIndex(
+            allBoardCopy,
+            +source.droppableId
+          );
+          const cardCopy = [...boardFilter.toDos];
+          const taskObj = boardFilter.toDos[source.index];
+
+          cardCopy.splice(source.index, 1);
+          cardCopy.splice(destination.index, 0, taskObj);
+          boardFilter.toDos = cardCopy;
+          allBoardCopy.splice(boardIdx, 1, boardFilter);
+          saveTodoListToLocalStorage(allBoardCopy);
+          return allBoardCopy;
+        });
+      } else {
+        //cross board movement
+        setToDos((allBoard) => {
+          const allBoardCopy = [...allBoard];
+          const { boardFilter: sourceBoard, boardIdx: sourceBoardIdx } =
+            filterWithIndex(allBoardCopy, +source.droppableId);
+          const {
+            boardFilter: destinationBoard,
+            boardIdx: destinationBoardIdx,
+          } = filterWithIndex(allBoardCopy, +destination.droppableId);
+
+          const sourceCard = [...sourceBoard.toDos];
+          const destinationCard = [...destinationBoard.toDos];
+          const taskObj = sourceBoard.toDos[source.index];
+
+          sourceCard.splice(source.index, 1);
+          destinationCard.splice(destination.index, 0, taskObj);
+          sourceBoard.toDos = sourceCard;
+          destinationBoard.toDos = destinationCard;
+          allBoardCopy.splice(sourceBoardIdx, 1, sourceBoard);
+          allBoardCopy.splice(destinationBoardIdx, 1, destinationBoard);
+          saveTodoListToLocalStorage(allBoardCopy);
+          return allBoardCopy;
+        });
+      }
     }
   };
 
   return (
     <>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Wrapper isOpen={isOpen} newBoard={newBoard}>
+      <DragDropContext onBeforeDragStart={onDragStart} onDragEnd={onDragEnd}>
+        <Wrapper $isOpen={isOpen} $newBoard={newBoard}>
           <HeaderBox>
             <HeaderH1>Daily Schedule</HeaderH1>
+            <ButtonBox setNewBoard={setNewBoard} />
           </HeaderBox>
+
           <Boards>
-            {Object.keys(toDos).map((boardId) => (
+            {Object.keys(toDos).map((index) => (
               <Board
-                boardId={boardId}
-                key={boardId}
-                toDos={toDos[boardId]}
+                boardId={toDos[+index].id}
+                boardTitle={toDos[+index].title}
+                key={index}
+                toDos={toDos[Number(index)].toDos}
                 setIsOpen={setIsOpen}
-                setBoardId={setBoardId}
                 setToDoId={setToDoId}
+                setBoardId={setBoardId}
               />
             ))}
           </Boards>
-          <ButtonBox>
-            <Button onClick={() => setDarkAtom((prev) => !prev)}>
-              <ButtonIcon icon={darkAtom ? faRegularMoon : faSolidMoon} />
-            </Button>
-            <Button onClick={() => setNewBoard((prev) => !prev)}>
-              <ButtonIcon icon={faPlus} />
-            </Button>
-          </ButtonBox>
         </Wrapper>
+
+        <Trash $trashOpen={trashOpen} />
       </DragDropContext>
+
+      {/* 투두 리스트 form*/}
       {isOpen && (
         <ToDoForm
           toDoId={toDoId}
           setToDoId={setToDoId}
-          boardId={boardId}
           setIsOpen={setIsOpen}
+          boardId={boardId}
+          setBoardId={setBoardId}
         />
       )}
+
+      {/* 보드 추가 폼 */}
       {newBoard && <BoardForm setNewBoard={setNewBoard} />}
     </>
   );

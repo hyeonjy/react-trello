@@ -1,13 +1,5 @@
 import { styled } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  useState,
-  SetStateAction,
-  Dispatch,
-  useEffect,
-  MutableRefObject,
-  useRef,
-} from "react";
+import { SetStateAction, Dispatch, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { faX } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -18,10 +10,18 @@ import {
   TitleInput,
   Form,
 } from "./ToDoForm";
+import { useRecoilState } from "recoil";
+import { toDoState } from "../atoms";
+import { saveTodoListToLocalStorage } from "../utils/todo";
 
-//new board
 const Wrapper = styled(Modal)`
   height: 200px;
+
+  /* 가운데 배치 */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 const Input = styled(TitleInput)`
@@ -52,11 +52,34 @@ interface IBoardFormProps {
 function BoardForm({ setNewBoard }: IBoardFormProps) {
   const ref = useRef<HTMLDivElement | undefined>();
   const { register, setValue, handleSubmit } = useForm<IForm>();
+  const [toDos, setToDos] = useRecoilState(toDoState);
+  const [scrollPosition, setScrollPosition] = useState(window.scrollY);
 
   const onValid = ({ board }: IForm) => {
+    const newBoard = {
+      id: Date.now(),
+      title: board,
+      toDos: [],
+    };
+    const allBoardCopy = [...toDos];
+    allBoardCopy.splice(allBoardCopy.length, 0, newBoard);
+    setToDos(allBoardCopy);
+    saveTodoListToLocalStorage(allBoardCopy);
+
     setValue("board", "");
     setNewBoard(false);
   };
+
+  //모달 open시 스크롤 방지
+  useEffect(() => {
+    document.body.style.top = `-${scrollPosition}px`;
+    document.body.classList.add("modal-open"); // body에 클래스 추가
+    return () => {
+      document.body.style.top = "";
+      document.body.classList.remove("modal-open"); // body에서 클래스 제거
+      window.scrollTo(0, scrollPosition);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -74,7 +97,7 @@ function BoardForm({ setNewBoard }: IBoardFormProps) {
         <Header>보드 추가</Header>
         <HeaderIcon icon={faX} onClick={() => setNewBoard(false)} />
       </HeaderBox>
-      <Form>
+      <Form onSubmit={handleSubmit(onValid)}>
         <Input
           {...register("board", { required: true })}
           type="text"

@@ -4,11 +4,6 @@ import { recoilPersist } from "recoil-persist";
 const localStorageTodo = localStorage.getItem("TODOLIST") || "{}";
 const parsedLocalStorageTodo = JSON.parse(localStorageTodo);
 
-// export const isDarkAtom = atom({
-//   key: "isDark",
-//   default: true,
-// });
-
 const { persistAtom } = recoilPersist({
   key: "isDarkLocal",
   storage: localStorage,
@@ -37,14 +32,46 @@ export interface IToDoState {
   [key: string]: ITodo[];
 }
 
-export const toDoState = atom<IToDoState>({
+export const toDoState = atom<IBoard[]>({
   key: "toDo",
   default:
     localStorageTodo !== "{}"
       ? parsedLocalStorageTodo
-      : {
-          TO_DO: [],
-          DOING: [],
-          DONE: [],
-        },
+      : [
+          {
+            id: 1,
+            title: "TO_DO",
+            toDos: [
+              {
+                id: 1,
+                text: "토익",
+                content: "영단어 50개 암기",
+                type: "study",
+              },
+              {
+                id: 123,
+                text: "코딩",
+                content: "리액트 강의 듣기",
+                type: "study",
+              },
+            ],
+          },
+          {
+            id: 2,
+            title: "DOING",
+            toDos: [
+              {
+                id: 12,
+                text: "운동",
+                content: "조깅하기",
+                type: "exercise",
+              },
+            ],
+          },
+          {
+            id: 3,
+            title: "DONE",
+            toDos: [],
+          },
+        ],
 });
