@@ -1,14 +1,9 @@
-import {
-  StyleSheetManager,
-  ThemeProvider,
-  createGlobalStyle,
-} from "styled-components";
+import { ThemeProvider, createGlobalStyle } from "styled-components";
 import Router from "./Router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { lightTheme, darkTheme } from "./theme";
 import { useRecoilValue } from "recoil";
 import { isDarkAtom } from "./atoms";
-import isPropValid from "@emotion/is-prop-valid";
 
 const GlobalStyle = createGlobalStyle`
   html, body, div, span, applet, object, iframe,
