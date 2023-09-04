@@ -1,6 +1,6 @@
 {
-  "homepage": "https://hyeonjy.github.io/react-todolist",
-  "name": "react-todolist",
+  "homepage": "https://hyeonjy.github.io/react-trello",
+  "name": "react-trello",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
