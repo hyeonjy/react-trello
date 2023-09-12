@@ -1,46 +1,37 @@
-# Getting Started with Create React App
+# Trello Clone
+ 카드, 보드를 사용하여 작업을 구성하는 투드리스트 보드입니다.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 1. 사용 기술
+<div style="display:flex">
+  <img alt="React" src="https://img.shields.io/badge/React-61DAFB.svg?&style=for-the-badge&logo=React&logoColor=black"/>
+  <img alt="Typescript" src="https://img.shields.io/badge/Typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=black"/>
+  <img alt="recoil" src="https://img.shields.io/badge/Recoil-3578E5?style=for-the-badge&logo=recoil&logoColor=black"/>
+  <img alt="styledcomponents" src="https://img.shields.io/badge/styledcomponents-DB7093.svg?&style=for-the-badge&logo=styledcomponents&logoColor=black"/>
+  <img alt="reactbeautifuldnd" src="https://img.shields.io/badge/React--beautiful--dnd-007396?style=for-the-badge&logo=reactbeautifuldnd&logoColor=white"/>
 
-## Available Scripts
+</div>
 
-In the project directory, you can run:
+<br/>
 
-### `npm start`
+✏️ 사용 라이브러리
+- Styled-components : 컴포넌트 기반 스타일링
+- Recoil : 다크모드, 보드 상태 관리
+- React-beautiful-dnd : 드래그 앤 드롭 기능 구현
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 2. 구현기능
+### 1. 보드 추가 및 삭제
+- 상단 오른쪽 + 버튼을 통해 보드를 추가할 수 있습니다.
+- 보드 이름의 오른쪽 x 버튼을 클릭하여 보드를 삭제할 수 있습니다. 
+### 2. 리스트 추가, 수정 및 삭제
+- 리스트 추가 시에는 작업이름, 분야, 세부사항을 등록할 수 있습니다.
+- 리스트를 등록하면 작업이름이 추가되고, 작업이름을 클릭하면 분야와 세부사항을 확인할 수 있습니다.
+- React Hook Form을 이용해 form을 구현 및 유효성을 검사합니다.
+- 리스트의 오른쪽 버튼을 통해 수정과 삭제가 가능합니다.
+- Recoil을 이용하여 데이터 상태를 관리합니다.
+### 3. 리스트 드로그 앤 드롭
+- 보드 내에서 작성한 리스트를 다른 보드로 드로그 앤 드롭이 가능합니다.
+- 작성한 리스트를 휴지통에 드로그 앤 드롭하면 리스트가 삭제됩니다.
+  
+### 4. 다크모드/라이트모드 설정
+- Recoil을 이용하여 다크모드/라이트모드 상태를 관리합니다.
+- 새로고침 시 데이터가 초기화되는 상태를 방지하기 위해 Recoil-persist를 사용하여 데이터를 관리합니다.
