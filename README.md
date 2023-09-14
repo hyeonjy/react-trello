@@ -8,7 +8,6 @@
   <img alt="recoil" src="https://img.shields.io/badge/Recoil-3578E5?style=for-the-badge&logo=recoil&logoColor=black"/>
   <img alt="styledcomponents" src="https://img.shields.io/badge/styledcomponents-DB7093.svg?&style=for-the-badge&logo=styledcomponents&logoColor=black"/>
   <img alt="reactbeautifuldnd" src="https://img.shields.io/badge/React--beautiful--dnd-007396?style=for-the-badge&logo=reactbeautifuldnd&logoColor=white"/>
-
 </div>
 
 <br/>
@@ -20,6 +19,8 @@
 
 ## 2. 구현기능
 ### 1. 보드 추가 및 삭제
+<img src="https://github.com/hyeonjy/react-trello/assets/86361624/cb0bc9f1-40f4-40ac-bb16-e3572ae3f008" />  
+
 - 상단 오른쪽 + 버튼을 통해 보드를 추가할 수 있습니다.
 - 보드 이름의 오른쪽 x 버튼을 클릭하여 보드를 삭제할 수 있습니다. 
 ### 2. 리스트 추가, 수정 및 삭제
