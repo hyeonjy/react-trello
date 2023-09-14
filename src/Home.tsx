@@ -17,14 +17,16 @@ import Trash from "./Components/Trash";
 interface IWrapperProps {
   $isOpen: boolean;
   $newBoard: boolean;
+  $scrollPosition: number;
 }
 
 const Wrapper = styled.div<IWrapperProps>`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  position: relative;
-  height: 100%;
+  height: ${(props) =>
+    (props.$isOpen || props.$newBoard) && props.$scrollPosition > 0
+      ? "auto"
+      : "100vh"};
   background-color: ${(props) =>
     props.$isOpen || props.$newBoard ? "rgba(0, 0, 0, 0.4)" : "transparent"};
   filter: ${(props) =>
@@ -73,6 +75,7 @@ function Home() {
   const [toDoId, setToDoId] = useState<null | number>(null);
   const [boardId, setBoardId] = useState<null | number>(null);
   const [trashOpen, setTrashOpen] = useState<boolean>(false);
+  const [scrollPosition, setScrollPosition] = useState(window.scrollY);
 
   const onDragStart = ({ type }: { type: string }) => {
     if (type === "board") {
@@ -136,7 +139,11 @@ function Home() {
   return (
     <>
       <DragDropContext onBeforeDragStart={onDragStart} onDragEnd={onDragEnd}>
-        <Wrapper $isOpen={isOpen} $newBoard={newBoard}>
+        <Wrapper
+          $isOpen={isOpen}
+          $newBoard={newBoard}
+          $scrollPosition={scrollPosition}
+        >
           <HeaderBox>
             <HeaderH1>Daily Schedule</HeaderH1>
             <ButtonBox setNewBoard={setNewBoard} />
@@ -157,10 +164,11 @@ function Home() {
           </Boards>
         </Wrapper>
 
+        {/* 휴지통 */}
         <Trash $trashOpen={trashOpen} />
       </DragDropContext>
 
-      {/* 투두 리스트 form*/}
+      {/* 투드 리스트 form*/}
       {isOpen && (
         <ToDoForm
           toDoId={toDoId}
@@ -168,11 +176,17 @@ function Home() {
           setIsOpen={setIsOpen}
           boardId={boardId}
           setBoardId={setBoardId}
+          setScrollPosition={setScrollPosition}
         />
       )}
 
       {/* 보드 추가 폼 */}
-      {newBoard && <BoardForm setNewBoard={setNewBoard} />}
+      {newBoard && (
+        <BoardForm
+          setNewBoard={setNewBoard}
+          setScrollPosition={setScrollPosition}
+        />
+      )}
     </>
   );
 }

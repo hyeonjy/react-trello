@@ -146,6 +146,7 @@ interface IToDoFromProps {
   setToDoId: Dispatch<SetStateAction<number | null>>;
   boardId: number | null;
   setBoardId: Dispatch<SetStateAction<number | null>>;
+  setScrollPosition: Dispatch<SetStateAction<number>>;
 }
 
 const types = ["study", "work", "exercise", "reading"];
@@ -156,15 +157,17 @@ function ToDoForm({
   setIsOpen,
   boardId,
   setBoardId,
+  setScrollPosition,
 }: IToDoFromProps) {
   const MAX_LENGTH = 6;
   const [toDos, setToDos] = useRecoilState(toDoState);
-  const [scrollPosition, setScrollPosition] = useState(window.scrollY);
   const { register, setValue, handleSubmit } = useForm<IForm>();
   const ref = useRef<HTMLDivElement | undefined>();
 
   //모달 open시 스크롤 방지
   useEffect(() => {
+    const scrollPosition = window.scrollY;
+    setScrollPosition(scrollPosition);
     document.body.style.top = `-${scrollPosition}px`;
     document.body.classList.add("modal-open"); // body에 클래스 추가
     return () => {
