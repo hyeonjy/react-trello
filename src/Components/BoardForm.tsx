@@ -103,6 +103,7 @@ function BoardForm({ setNewBoard, setScrollPosition }: IBoardFormProps) {
         <Input
           {...register("board", { required: true })}
           type="text"
+          autoComplete="off"
           placeholder={`보드 이름을 작성해주세요`}
         />
 
