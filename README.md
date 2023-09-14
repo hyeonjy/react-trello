@@ -19,7 +19,7 @@
 
 ## 2. 구현기능
 ### 1. 보드 추가 및 삭제
-<img width="50%" src="https://github.com/hyeonjy/react-trello/assets/86361624/cb0bc9f1-40f4-40ac-bb16-e3572ae3f008" />  
+<img src="https://github.com/hyeonjy/react-trello/assets/86361624/9b40dbae-2d0e-457a-a239-0113d72a948b" />  
 
 - 상단 오른쪽 + 버튼을 통해 보드를 추가할 수 있습니다.
 - 보드 이름의 오른쪽 x 버튼을 클릭하여 보드를 삭제할 수 있습니다. 
