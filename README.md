@@ -41,3 +41,5 @@
 ### 4. 다크모드/라이트모드 설정
 - Recoil을 이용하여 다크모드/라이트모드 상태를 관리합니다.
 - 새로고침 시 데이터가 초기화되는 상태를 방지하기 위해 Recoil-persist를 사용하여 데이터를 관리합니다.
+
+<img src="https://github.com/hyeonjy/react-trello/assets/86361624/144aa8c9-3389-4cd6-b0da-63fb7a3295cb" />
