@@ -21,7 +21,7 @@
 ### 1. 보드 추가 및 삭제 
 - 상단 오른쪽 + 버튼을 통해 보드를 추가할 수 있습니다.
 - 보드 이름의 오른쪽 x 버튼을 클릭하여 보드를 삭제할 수 있습니다.
-<img src="https://github.com/hyeonjy/react-trello/assets/86361624/88fc4eb3-06fc-44a6-99fc-0999881601f0" />   
+<img src="https://github.com/hyeonjy/react-trello/assets/86361624/0872bbb8-8fbc-4132-b926-e05f3731f29a" />   
 
 ### 2. 리스트 추가, 수정 및 삭제
 - 리스트 추가 시에는 작업이름, 분야, 세부사항을 등록할 수 있습니다.
