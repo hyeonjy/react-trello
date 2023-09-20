@@ -30,10 +30,13 @@
 - 리스트의 오른쪽 버튼을 통해 수정과 삭제가 가능합니다.
 - Recoil을 이용하여 데이터 상태를 관리합니다.
 
-<img src="https://github.com/hyeonjy/react-trello/assets/86361624/9b40dbae-2d0e-457a-a239-0113d72a948b" /> 
+<img src="https://github.com/hyeonjy/react-trello/assets/86361624/02347459-6408-46ff-92ec-8249b495d470" /> 
+
 ### 3. 리스트 드로그 앤 드롭
 - 보드 내에서 작성한 리스트를 다른 보드로 드로그 앤 드롭이 가능합니다.
 - 작성한 리스트를 휴지통에 드로그 앤 드롭하면 리스트가 삭제됩니다.
+
+<img src="https://github.com/hyeonjy/react-trello/assets/86361624/3f07627d-ccfe-462a-93d6-7597529d7939" />
   
 ### 4. 다크모드/라이트모드 설정
 - Recoil을 이용하여 다크모드/라이트모드 상태를 관리합니다.
