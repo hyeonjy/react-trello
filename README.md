@@ -19,12 +19,12 @@
 
 ## 2. 구현기능
 ### 1. 보드 추가 및 삭제
-<img src="https://github.com/hyeonjy/react-trello/assets/86361624/64c1f1a2-aa3e-4153-a859-2904cd37c52a" />  
+<img src="https://github.com/hyeonjy/react-trello/assets/86361624/9b40dbae-2d0e-457a-a239-0113d72a948b" />  
 
 - 상단 오른쪽 + 버튼을 통해 보드를 추가할 수 있습니다.
 - 보드 이름의 오른쪽 x 버튼을 클릭하여 보드를 삭제할 수 있습니다. 
 ### 2. 리스트 추가, 수정 및 삭제
-<img src="https://github.com/hyeonjy/react-trello/assets/86361624/9b40dbae-2d0e-457a-a239-0113d72a948b" />  
+<img src="https://github.com/hyeonjy/react-trello/assets/86361624/64c1f1a2-aa3e-4153-a859-2904cd37c52a" />  
 
 - 리스트 추가 시에는 작업이름, 분야, 세부사항을 등록할 수 있습니다.
 - 리스트를 등록하면 작업이름이 추가되고, 작업이름을 클릭하면 분야와 세부사항을 확인할 수 있습니다.
