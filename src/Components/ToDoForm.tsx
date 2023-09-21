@@ -159,7 +159,7 @@ function ToDoForm({
   setBoardId,
   setScrollPosition,
 }: IToDoFromProps) {
-  const MAX_LENGTH = 6;
+  const MAX_LENGTH = 9;
   const [toDos, setToDos] = useRecoilState(toDoState);
   const { register, setValue, handleSubmit } = useForm<IForm>();
   const ref = useRef<HTMLDivElement | undefined>();
@@ -267,7 +267,7 @@ function ToDoForm({
             id="title"
             type="text"
             autoComplete="off"
-            maxLength={6}
+            maxLength={9}
             {...register("toDo", {
               required: true,
               onChange: (e) => {

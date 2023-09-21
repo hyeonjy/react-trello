@@ -41,7 +41,7 @@ const HeaderBox = styled.div`
 `;
 
 const HeaderH1 = styled.h1`
-  font-size: 45px;
+  font-size: 40px;
   font-family: "ONE-Mobile-POP", "Source Sans Pro", sans-serif;
   text-align: center;
   color: ${(props) => props.theme.headerColor};
@@ -145,7 +145,7 @@ function Home() {
           $scrollPosition={scrollPosition}
         >
           <HeaderBox>
-            <HeaderH1>Daily Schedule</HeaderH1>
+            <HeaderH1>작업목록</HeaderH1>
             <ButtonBox setNewBoard={setNewBoard} />
           </HeaderBox>
 
