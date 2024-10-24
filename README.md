@@ -1,7 +1,7 @@
 # Trello Clone
  카드, 보드를 사용하여 작업을 구성하는 투드리스트 보드입니다.
 
-## 1. 사용 기술
+## 1. 사용한 기술 스택
 <div style="display:flex">
   <img alt="React" src="https://img.shields.io/badge/React-61DAFB.svg?&style=for-the-badge&logo=React&logoColor=black"/>
   <img alt="Typescript" src="https://img.shields.io/badge/Typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=black"/>
